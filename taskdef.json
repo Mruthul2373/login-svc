@@ -1,0 +1,60 @@
+{
+  "family": "login-svc",
+  "executionRoleArn": "arn:aws:iam::501591550802:role/ecsTaskExecutionRole",
+  "networkMode": "awsvpc",
+  "containerDefinitions": [
+    {
+      "name": "login-svc",
+      "image": "501591550802.dkr.ecr.us-east-1.amazonaws.com/login-svc:latest",
+      "cpu": 0,
+      "essential": true,
+      "portMappings": [
+        {
+          "containerPort": 8081,
+          "hostPort": 8081,
+          "protocol": "tcp",
+          "name": "login-svc-8081-tcp",
+          "appProtocol": "http"
+        }
+      ],
+      "environment": [
+        {
+          "name": "REDIRECT_URI",
+          "value": "https://api.mruthul-micro.click/login/callback"
+        },
+        {
+          "name": "COGNITO_DOMAIN",
+          "value": "auth.mruthul-micro.click"
+        },
+        {
+          "name": "CLIENT_ID",
+          "value": "6lvugjo0qedhfun04v3d9m75ra"
+        },
+        {
+          "name": "API_DOMAIN",
+          "value": "api.mruthul-micro.click"
+        }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/login-svc",
+          "awslogs-create-group": "true",
+          "awslogs-region": "us-east-1",
+          "awslogs-stream-prefix": "ecs"
+        }
+      }
+    }
+  ],
+  "volumes": [],
+  "placementConstraints": [],
+  "runtimePlatform": {
+    "cpuArchitecture": "X86_64",
+    "operatingSystemFamily": "LINUX"
+  },
+  "requiresCompatibilities": [
+    "FARGATE"
+  ],
+  "cpu": "1024",
+  "memory": "3072"
+}
