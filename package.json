@@ -1,0 +1,15 @@
+{
+  "name": "login-svc",
+  "version": "1.0.0",
+  "description": "AWS microservices capstone - login-svc",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js"
+  },
+  "engines": { "node": ">=20" },
+  "dependencies": {
+    "express": "^4.19.2",
+    "prom-client": "^15.1.3"
+  }
+}
+

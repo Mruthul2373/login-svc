@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Login Service</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 640px; margin: 40px auto; padding: 0 16px; }
+    input, button { font-size:16px; padding:10px; margin:5px 0; width:100%; box-sizing:border-box; }
+    button { background:#0972d3; color:#fff; border:none; border-radius:6px; cursor:pointer; }
+    pre { background:#f4f4f4; padding:12px; border-radius:6px; white-space:pre-wrap; word-break:break-all; }
+    .ok { color:#037f51; } .err { color:#d13212; }
+    .card { border:1px solid #ddd; border-radius:8px; padding:20px; margin:16px 0; }
+  </style>
+</head>
+<body>
+  <h1>Login</h1>
+
+  <!-- ▼▼▼ FILL THESE IN ▼▼▼ -->
+  <script>
+    const REGION    = "us-east-1";
+    const CLIENT_ID = "6lvugjo0qedhfun04v3d9m75ra";
+  </script>
+  <!-- ▲▲▲ FILL THESE IN ▲▲▲ -->
+
+  <div class="card">
+    <input id="username" placeholder="email / username" />
+    <input id="password" type="password" placeholder="password" />
+    <button onclick="login()">Log in with Cognito</button>
+    <p id="status"></p>
+  </div>
+  <div class="card">
+    <h3>Your token</h3>
+    <pre id="idtoken">— not logged in —</pre>
+    <pre id="claims"></pre>
+  </div>
+
+  <script>
+    window.onload = () => {
+      const t = sessionStorage.getItem("idToken");
+      if (t) showToken(t);
+    };
+    async function login() {
+      const status = document.getElementById("status");
+      status.textContent = "Signing in..."; status.className = "";
+      const username = document.getElementById("username").value.trim();
+      const password = document.getElementById("password").value;
+      try {
+        const res = await fetch(`https://cognito-idp.${REGION}.amazonaws.com/`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/x-amz-json-1.1",
+            "X-Amz-Target": "AWSCognitoIdentityProviderService.InitiateAuth"
+          },
+          body: JSON.stringify({
+            AuthFlow: "USER_PASSWORD_AUTH",
+            ClientId: CLIENT_ID,
+            AuthParameters: { USERNAME: username, PASSWORD: password }
+          })
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          status.textContent = "❌ " + (data.message || data.__type || "Login failed");
+          status.className = "err"; return;
+        }
+        if (data.ChallengeName) {
+          status.textContent = "⚠️ Challenge: " + data.ChallengeName + " — set a permanent password first.";
+          status.className = "err"; return;
+        }
+        const idToken = data.AuthenticationResult.IdToken;
+        sessionStorage.setItem("idToken", idToken);
+        showToken(idToken);
+        status.textContent = "✅ Logged in! Token saved.";
+        status.className = "ok";
+      } catch (e) {
+        status.textContent = "❌ " + e.message; status.className = "err";
+      }
+    }
+    function showToken(idToken) {
+      document.getElementById("idtoken").textContent = idToken;
+      const payload = JSON.parse(atob(idToken.split(".")[1]));
+      document.getElementById("claims").textContent = JSON.stringify(payload, null, 2);
+    }
+  </script>
+</body>
+</html>
